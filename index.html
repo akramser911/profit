@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BTC Profit Calculator</title>
     <style>
+        /* General Styles */
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
@@ -13,6 +14,12 @@
             align-items: center;
             height: 100vh;
             margin: 0;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.dark-mode {
+            background-color: #121212;
+            color: #ffffff;
         }
 
         .container {
@@ -22,11 +29,22 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 350px;
             text-align: center;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        body.dark-mode .container {
+            background-color: #1e1e1e;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
         }
 
         h1 {
             margin-bottom: 20px;
             color: #333;
+            transition: color 0.3s;
+        }
+
+        body.dark-mode h1 {
+            color: #ffffff;
         }
 
         label {
@@ -34,6 +52,11 @@
             margin-bottom: 5px;
             font-weight: bold;
             color: #555;
+            transition: color 0.3s;
+        }
+
+        body.dark-mode label {
+            color: #cccccc;
         }
 
         input {
@@ -43,6 +66,13 @@
             border: 1px solid #ccc;
             border-radius: 4px;
             font-size: 16px;
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+        }
+
+        body.dark-mode input {
+            background-color: #333;
+            border-color: #555;
+            color: #ffffff;
         }
 
         button {
@@ -54,6 +84,7 @@
             cursor: pointer;
             font-size: 16px;
             margin: 5px;
+            transition: background-color 0.3s;
         }
 
         button:hover {
@@ -72,6 +103,11 @@
             margin-top: 20px;
             font-size: 1.2em;
             color: #333;
+            transition: color 0.3s;
+        }
+
+        body.dark-mode #result {
+            color: #ffffff;
         }
 
         .result-box {
@@ -79,6 +115,11 @@
             padding: 15px;
             border-radius: 4px;
             margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+
+        body.dark-mode .result-box {
+            background-color: #333;
         }
 
         .result-box p {
@@ -94,9 +135,35 @@
             color: #dc3545;
             font-style: italic;
         }
+
+        /* Dark Mode Toggle Button */
+        .dark-mode-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        body.dark-mode .dark-mode-toggle {
+            background-color: #555;
+        }
+
+        .dark-mode-toggle:hover {
+            background-color: #444;
+        }
     </style>
 </head>
 <body>
+    <!-- Dark Mode Toggle Button -->
+    <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙 Dark Mode</button>
+
     <div class="container">
         <h1>BTC Profit Calculator</h1>
         <form id="btcForm">
@@ -192,6 +259,18 @@
             document.getElementById('usdResult').textContent = '';
             document.getElementById('dzdResult').textContent = '';
             fetchBTCPrice(); // Re-fetch the BTC price after reset
+        }
+
+        // Toggle Dark Mode
+        function toggleDarkMode() {
+            const body = document.body;
+            body.classList.toggle('dark-mode');
+            const darkModeToggle = document.querySelector('.dark-mode-toggle');
+            if (body.classList.contains('dark-mode')) {
+                darkModeToggle.textContent = '☀️ Light Mode';
+            } else {
+                darkModeToggle.textContent = '🌙 Dark Mode';
+            }
         }
 
         // Fetch BTC price when the page loads
