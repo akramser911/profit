@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTC Profit Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        button.reset {
+            background-color: #dc3545;
+        }
+
+        button.reset:hover {
+            background-color: #c82333;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #333;
+        }
+
+        .result-box {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+
+        .result-box p {
+            margin: 5px 0;
+        }
+
+        .loading {
+            color: #007bff;
+            font-style: italic;
+        }
+
+        .error {
+            color: #dc3545;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>BTC Profit Calculator</h1>
+        <form id="btcForm">
+            <label for="buyPrice">Price you bought BTC (USD):</label>
+            <input type="number" id="buyPrice" name="buyPrice" required min="0">
+
+            <label for="currentPrice">Current BTC Price (USD):</label>
+            <input type="number" id="currentPrice" name="currentPrice" required min="0" readonly>
+            <p id="priceLoading" class="loading">Fetching current BTC price...</p>
+            <p id="priceError" class="error" style="display: none;">Failed to fetch current BTC price. Please enter manually.</p>
+
+            <label for="amount">Amount of BTC:</label>
+            <input type="number" id="amount" name="amount" required min="0">
+
+            <label for="conversionRate">USD to DZD Conversion Rate:</label>
+            <input type="number" id="conversionRate" name="conversionRate" value="260" required min="0">
+
+            <button type="button" onclick="calculateProfit()">Calculate Profit</button>
+            <button type="button" class="reset" onclick="resetForm()">Reset</button>
+        </form>
+
+        <div id="result" class="result-box">
+            <p id="usdResult"></p>
+            <p id="dzdResult"></p>
+        </div>
+    </div>
+
+    <script>
+        // Fetch the current BTC price from Binance API
+        async function fetchBTCPrice() {
+            const priceLoading = document.getElementById('priceLoading');
+            const priceError = document.getElementById('priceError');
+            const currentPriceInput = document.getElementById('currentPrice');
+
+            try {
+                const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT');
+                const data = await response.json();
+
+                if (data && data.price) {
+                    currentPriceInput.value = parseFloat(data.price).toFixed(2);
+                    priceLoading.style.display = 'none';
+                    priceError.style.display = 'none';
+                } else {
+                    throw new Error('Invalid data from Binance API');
+                }
+            } catch (error) {
+                console.error('Error fetching BTC price:', error);
+                priceLoading.style.display = 'none';
+                priceError.style.display = 'block';
+                currentPriceInput.readOnly = false; // Allow manual input if API fails
+            }
+        }
+
+        // Calculate profit
+        function calculateProfit() {
+            const buyPrice = parseFloat(document.getElementById('buyPrice').value);
+            const currentPrice = parseFloat(document.getElementById('currentPrice').value);
+            const amount = parseFloat(document.getElementById('amount').value);
+            const conversionRate = parseFloat(document.getElementById('conversionRate').value);
+
+            // Validate inputs
+            if (isNaN(buyPrice) || isNaN(currentPrice) || isNaN(amount) || isNaN(conversionRate)) {
+                alert("Please fill in all fields with valid numbers.");
+                return;
+            }
+
+            // Calculate the profit in USD
+            const profitUSD = (currentPrice - buyPrice) * amount;
+
+            // Convert the profit to DZD
+            const profitDZD = profitUSD * conversionRate;
+
+            // Display the results
+            const usdResultElement = document.getElementById('usdResult');
+            const dzdResultElement = document.getElementById('dzdResult');
+
+            if (profitUSD >= 0) {
+                usdResultElement.textContent = `Profit in USD: $${profitUSD.toFixed(2)}`;
+                dzdResultElement.textContent = `Profit in DZD: ${profitDZD.toFixed(2)} DA`;
+                usdResultElement.style.color = 'green';
+                dzdResultElement.style.color = 'green';
+            } else {
+                usdResultElement.textContent = `Loss in USD: $${Math.abs(profitUSD).toFixed(2)}`;
+                dzdResultElement.textContent = `Loss in DZD: ${Math.abs(profitDZD).toFixed(2)} DA`;
+                usdResultElement.style.color = 'red';
+                dzdResultElement.style.color = 'red';
+            }
+        }
+
+        // Reset the form
+        function resetForm() {
+            document.getElementById('btcForm').reset();
+            document.getElementById('usdResult').textContent = '';
+            document.getElementById('dzdResult').textContent = '';
+            fetchBTCPrice(); // Re-fetch the BTC price after reset
+        }
+
+        // Fetch BTC price when the page loads
+        fetchBTCPrice();
+    </script>
+</body>
+</html>
